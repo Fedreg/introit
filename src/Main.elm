@@ -7,6 +7,7 @@ import Html.Attributes exposing (style)
 import Html.Events exposing (..)
 import Json.Decode as Decode
 import Model exposing (Model)
+import Notes as Notes
 import Random
 
 
@@ -25,7 +26,7 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model ( 20.0, 20.0 ) []
+    ( Model ( 50.0, -200.0 ) []
     , Cmd.none
     )
 
@@ -116,13 +117,13 @@ getNewCursorPos currentPos dir =
     in
     case dir of
         "Left" ->
-            ( x - moveConst, y )
+            ( Basics.max (x - moveConst) 0, y )
 
         "Right" ->
             ( x + moveConst, y )
 
         "Up" ->
-            ( x, y + moveConst )
+            ( x, Basics.min (y + moveConst) 0 )
 
         "Down" ->
             ( x, y - moveConst )
@@ -210,159 +211,16 @@ cursor pos =
         []
 
 
-defaultNoteForMaybe =
-    Tuple.pair "W" (Tuple.pair 0 0)
-
-
-noteHeight : Int
-noteHeight =
-    19
-
-
-noteWidth : Int
-noteWidth =
-    20
-
-
-staffLineHeight : Int
-staffLineHeight =
-    20
-
-
-noteColor : String
-noteColor =
-    "white"
-
-
-baseNoteDiv : String -> Float -> Html Msg
-baseNoteDiv color widthMult =
-    div
-        [ style "border" "1px solid #fff"
-        , style "border-radius" "5px"
-        , style "height" (String.fromInt noteHeight ++ "px")
-        , style "width" (Debug.toString (toFloat noteWidth * widthMult) ++ "px")
-        , style "background-color" color
-        , style "zIndex" "10"
-        ]
-        []
-
-
-wholeNoteDiv : Html Msg
-wholeNoteDiv =
-    baseNoteDiv "" 4.0
-
-
-halfNoteDiv : Html Msg
-halfNoteDiv =
-    baseNoteDiv "#444" 2.0
-
-
-quarterNoteDiv : Html Msg
-quarterNoteDiv =
-    baseNoteDiv "#888" 1.0
-
-
-eigthNoteDiv : Html Msg
-eigthNoteDiv =
-    baseNoteDiv "#bbb" 0.5
-
-
-sixteenthNoteDiv : Html Msg
-sixteenthNoteDiv =
-    baseNoteDiv "#fff" 0.25
-
-
-noteDivChooser : String -> Html Msg
-noteDivChooser name =
-    case name of
-        "W" ->
-            wholeNoteDiv
-
-        "H" ->
-            halfNoteDiv
-
-        "Q" ->
-            quarterNoteDiv
-
-        "E" ->
-            eigthNoteDiv
-
-        "S" ->
-            sixteenthNoteDiv
-
-        _ ->
-            div [] []
-
-
-noteDiv : ( String, ( Float, Float ) ) -> Html Msg
-noteDiv note =
-    let
-        name =
-            Tuple.first note
-
-        pos =
-            Tuple.second note
-
-        x =
-            Tuple.first pos
-
-        y =
-            negate (Tuple.second pos)
-    in
-    div
-        [ style "height" "20px"
-        , style "width" "20px"
-        , style "position" "fixed"
-        , style "top" (Debug.toString y ++ "px")
-        , style "left" (Debug.toString x ++ "px")
-        ]
-        [ noteDivChooser name ]
-
-
 view : Model -> Html Msg
 view model =
     div
         [ style "background-color" "#111"
         , style "height" "1000px"
         , style "color" "white"
-        , style "marginTop" "-25px"
-        , style "paddingTop" "100px"
         ]
         [ cursor model.cursorPos
-        , h1 [] [ text (Debug.toString model.cursorPos) ]
+        , Notes.defFlugel model.notes
 
-        -- , h1 [] [ text (Debug.toString model.notes) ]
-        , staff
-        , div [] (List.map noteDiv <| model.notes)
+        --, h1 [] [ Html.text (Debug.toString model.cursorPos) ]
+        --, h1 [] [ text (Debug.toString model.notes) ]
         ]
-
-
-staff : Html Msg
-staff =
-    div staffContainerStyle
-        [ div (staffStyle 20) []
-        , div (staffStyle 39) []
-        , div (staffStyle 58) []
-        , div (staffStyle 77) []
-        , div (staffStyle 96) []
-        ]
-
-
-staffStyle : Int -> List (Attribute msg)
-staffStyle top =
-    [ style "position" "relative"
-    , style "top" (Debug.toString top ++ "px")
-    , style "width" "1500px"
-    , style "borderBottom" "1px solid #444"
-    ]
-
-
-staffContainerStyle : List (Attribute msg)
-staffContainerStyle =
-    [ --style "padding" "15px"
-      style "marginTop" "20px"
-    , style "position" "absolute"
-    , style "top" "100px"
-    , style "left" "50px"
-    , style "box-sizing" "border-box"
-    ]
