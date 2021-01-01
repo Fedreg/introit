@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Browser
 import Browser.Events as BE
@@ -26,7 +26,7 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model ( 50.0, -200.0 ) []
+    ( Model ( 60.0, -90.0 ) []
     , Cmd.none
     )
 
@@ -154,6 +154,9 @@ addNotes notes note pos =
             notes
 
 
+port playNote : String -> Cmd msg
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -170,9 +173,21 @@ update msg model =
 
                 notes =
                     addNotes model.notes note pos
+
+                cmd =
+                    case note of
+                        "" ->
+                            Cmd.none
+
+                        _ ->
+                            let
+                                a =
+                                    Debug.log "Snap!" note
+                            in
+                            playNote note
             in
             ( { model | cursorPos = pos, notes = notes }
-            , Cmd.none
+            , cmd
             )
 
 
@@ -214,7 +229,7 @@ cursor pos =
 view : Model -> Html Msg
 view model =
     div
-        [ style "background-color" "#111"
+        [ style "background-color" "#E2E3DE"
         , style "height" "1000px"
         , style "color" "white"
         ]
@@ -224,3 +239,12 @@ view model =
         --, h1 [] [ Html.text (Debug.toString model.cursorPos) ]
         --, h1 [] [ text (Debug.toString model.notes) ]
         ]
+
+
+
+-- TODO
+-- Layers for polyphony (switch layer with key press, not mouse)
+-- ledger lines
+-- measure lines (add with key press)
+-- Web audio
+-- Edit / Delete notes

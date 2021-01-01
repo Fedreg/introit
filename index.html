@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Main</title>
+  <style>body { padding: 0; margin: 0; }</style>
+</head>
+
+<body>
+
+<pre id="elm"></pre>
+
+<script src="https://unpkg.com/tone@14.1.25/build/Tone.js"></script>
+<script src="elm.js"></script>
+<!--<script src="ports.js"></script>-->
+
+<script>
+var app = Elm.Main.init({ node: document.getElementById("elm") });
+
+const synth = new Tone.Synth().toDestination();
+
+app.ports.playNote.subscribe(function(message) {
+      synth.triggerAttackRelease("C4", "8n");
+      console.log("Pete2", message)
+});
+</script>
+</body>
+</html>

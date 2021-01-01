@@ -36,19 +36,19 @@ staffLineGroup yPos =
 noteWidth noteName =
     case noteName of
         "W" ->
-            "80"
+            "160"
 
         "H" ->
-            "40"
+            "80"
 
         "Q" ->
-            "20"
+            "40"
 
         "E" ->
-            "10"
+            "20"
 
         "S" ->
-            "5"
+            "10"
 
         _ ->
             "0"
@@ -57,19 +57,19 @@ noteWidth noteName =
 noteColor noteName =
     case noteName of
         "W" ->
-            "#333"
+            "#6AA4B0"
 
         "H" ->
-            "red"
+            "#62CCC0"
 
         "Q" ->
-            "deepPink"
+            "#2B4560"
 
         "E" ->
-            "blue"
+            "#E34234"
 
         "S" ->
-            "magenta"
+            "#00E0EA"
 
         _ ->
             ""
@@ -83,7 +83,7 @@ noteSvg note =
         nWidth =
             noteWidth name
 
-        color =
+        fillColor =
             noteColor name
 
         pos =
@@ -98,12 +98,12 @@ noteSvg note =
     rect
         [ x (Debug.toString xPos)
         , y (Debug.toString yPos)
-        , rx "5"
-        , ry "5"
+        , rx "10"
+        , ry "10"
         , width nWidth
         , height "20"
-        , fill color
-        , stroke "white"
+        , fill fillColor
+        , Svg.Attributes.filter "drop-shadow(1px 1px 2px #aaa)"
         ]
         []
 
