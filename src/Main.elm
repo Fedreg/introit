@@ -5,8 +5,10 @@ import Browser.Events as BE
 import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (..)
+import Input as Input
 import Json.Decode as Decode
 import Model exposing (Model)
+import Movement as Move
 import Notes as Notes
 import Random
 
@@ -26,7 +28,11 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model ( 60.0, -90.0 ) []
+    ( Model
+        ( 60.0, -90.0 )
+        []
+        "Normal"
+        [ "" ]
     , Cmd.none
     )
 
@@ -60,78 +66,6 @@ keyDecoder =
     Decode.field "key" Decode.string
 
 
-getDirection : String -> String
-getDirection key =
-    case key of
-        "j" ->
-            "Down"
-
-        "k" ->
-            "Up"
-
-        "h" ->
-            "Left"
-
-        "l" ->
-            "Right"
-
-        _ ->
-            ""
-
-
-getNote : String -> String
-getNote key =
-    case key of
-        "w" ->
-            "W"
-
-        "r" ->
-            "H"
-
-        "q" ->
-            "Q"
-
-        "e" ->
-            "E"
-
-        "s" ->
-            "S"
-
-        _ ->
-            ""
-
-
-moveConst : Float
-moveConst =
-    10.0
-
-
-getNewCursorPos : ( Float, Float ) -> String -> ( Float, Float )
-getNewCursorPos currentPos dir =
-    let
-        x =
-            Tuple.first currentPos
-
-        y =
-            Tuple.second currentPos
-    in
-    case dir of
-        "Left" ->
-            ( Basics.max (x - moveConst) 0, y )
-
-        "Right" ->
-            ( x + moveConst, y )
-
-        "Up" ->
-            ( x, Basics.min (y + moveConst) 0 )
-
-        "Down" ->
-            ( x, y - moveConst )
-
-        _ ->
-            ( x, y )
-
-
 addNotes : List ( String, ( Float, Float ) ) -> String -> ( Float, Float ) -> List ( String, ( Float, Float ) )
 addNotes notes note pos =
     case note of
@@ -162,32 +96,30 @@ update msg model =
     case msg of
         KeyInput key ->
             let
-                dir =
-                    getDirection key
+                newModel =
+                    case model.mode of
+                        "Normal" ->
+                            Move.parseMovement model key
 
-                note =
-                    getNote key
-
-                pos =
-                    getNewCursorPos model.cursorPos dir
-
-                notes =
-                    addNotes model.notes note pos
-
-                cmd =
-                    case note of
-                        "" ->
-                            Cmd.none
+                        "Input" ->
+                            Input.parseInput model key
 
                         _ ->
-                            let
-                                a =
-                                    Debug.log "Snap!" note
-                            in
-                            playNote note
+                            Move.parseMovement model key
+
+                --cmd =
+                --case note of
+                --"" ->
+                --Cmd.none
+                --_ ->
+                --let
+                --a =
+                --Debug.log "Snap!" note
+                --in
+                --playNote note
             in
-            ( { model | cursorPos = pos, notes = notes }
-            , cmd
+            ( newModel
+            , Cmd.none
             )
 
 
@@ -206,17 +138,31 @@ subscriptions model =
 -- VIEW
 
 
-cursor : ( Float, Float ) -> Html Msg
-cursor pos =
+cursor : Model -> Html Msg
+cursor model =
     let
+        pos =
+            model.cursorPos
+
         x =
             Tuple.first pos
 
         y =
             negate (Tuple.second pos)
+
+        color =
+            case model.mode of
+                "Normal" ->
+                    "black"
+
+                "Input" ->
+                    "red"
+
+                _ ->
+                    "black"
     in
     div
-        [ style "background-color" "red"
+        [ style "background-color" color
         , style "height" "20px"
         , style "width" "10px"
         , style "position" "fixed"
@@ -233,10 +179,10 @@ view model =
         , style "height" "1000px"
         , style "color" "white"
         ]
-        [ cursor model.cursorPos
+        [ cursor model
         , Notes.defFlugel model.notes
+        , h1 [] [ Html.text (Debug.toString model.noteInput) ]
 
-        --, h1 [] [ Html.text (Debug.toString model.cursorPos) ]
         --, h1 [] [ text (Debug.toString model.notes) ]
         ]
 
@@ -248,3 +194,6 @@ view model =
 -- measure lines (add with key press)
 -- Web audio
 -- Edit / Delete notes
+-- Now need to add insert and normal modes..
+-- on insert mode, user should enter, C41, for example, where 'C' is the note, '4' is the octave, and '1' is the duration (whole)
+-- each of these keystrokes will get pushed to an array, and if after a few keystrokes we have a valid note, draw the note, else clear array
