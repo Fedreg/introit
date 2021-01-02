@@ -32,7 +32,7 @@ init _ =
         ( 60.0, -90.0 )
         []
         "Normal"
-        [ "" ]
+        []
     , Cmd.none
     )
 
@@ -89,6 +89,9 @@ addNotes notes note pos =
 
 
 port playNote : String -> Cmd msg
+
+
+port fed : String -> Cmd msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -153,13 +156,13 @@ cursor model =
         color =
             case model.mode of
                 "Normal" ->
-                    "black"
+                    "blue"
 
                 "Input" ->
                     "red"
 
                 _ ->
-                    "black"
+                    "blue"
     in
     div
         [ style "background-color" color
@@ -194,6 +197,3 @@ view model =
 -- measure lines (add with key press)
 -- Web audio
 -- Edit / Delete notes
--- Now need to add insert and normal modes..
--- on insert mode, user should enter, C41, for example, where 'C' is the note, '4' is the octave, and '1' is the duration (whole)
--- each of these keystrokes will get pushed to an array, and if after a few keystrokes we have a valid note, draw the note, else clear array

@@ -5,7 +5,7 @@ import Model exposing (Model)
 
 moveConst : Float
 moveConst =
-    10.0
+    20.0
 
 
 getNewCursorPos : ( Float, Float ) -> String -> ( Float, Float )
@@ -64,8 +64,5 @@ parseMovement model key =
 
                 _ ->
                     "Normal"
-
-        pig =
-            Debug.log "NewMode" newMode
     in
     { model | cursorPos = getNewCursorPos model.cursorPos dir, mode = newMode }

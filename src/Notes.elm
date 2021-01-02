@@ -77,8 +77,9 @@ noteColor noteName =
 
 noteSvg note =
     let
+        -- This is pretty hacky..  should change notes from Tuples to Dicts
         name =
-            Tuple.first note
+            Maybe.withDefault "" (List.head <| List.reverse <| Tuple.first <| note)
 
         nWidth =
             noteWidth name

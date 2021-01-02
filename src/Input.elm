@@ -5,10 +5,6 @@ import Model exposing (Model)
 
 getNoteName : String -> String
 getNoteName key =
-    let
-        a =
-            Debug.log "Pickles" (String.toLower key)
-    in
     case String.toLower key of
         "a" ->
             "A"
@@ -95,24 +91,42 @@ getNoteDuration key =
             ""
 
 
+appendOrReturn : List String -> String -> List String
+appendOrReturn currentNoteInput attribute =
+    case attribute of
+        "" ->
+            currentNoteInput
+
+        _ ->
+            List.append currentNoteInput [ attribute ]
+
+
 buildNote : List String -> String -> List String
 buildNote currentNoteInput key =
-    let
-        el =
-            case List.length currentNoteInput of
-                1 ->
+    case List.length currentNoteInput of
+        0 ->
+            let
+                name =
                     getNoteName key
+            in
+            appendOrReturn currentNoteInput name
 
-                2 ->
+        1 ->
+            let
+                octave =
                     getNoteOctave key
+            in
+            appendOrReturn currentNoteInput octave
 
-                3 ->
+        2 ->
+            let
+                duration =
                     getNoteDuration key
+            in
+            appendOrReturn currentNoteInput duration
 
-                _ ->
-                    ""
-    in
-    List.append currentNoteInput [ el ]
+        _ ->
+            currentNoteInput
 
 
 parseInput : Model -> String -> Model
@@ -130,6 +144,21 @@ parseInput model key =
                     "Input"
 
         newNoteInput =
-            buildNote model.noteInput key
+            case key of
+                "i" ->
+                    []
+
+                "n" ->
+                    []
+
+                _ ->
+                    buildNote model.noteInput key
+
+        newNotes =
+            if List.length newNoteInput == 3 then
+                Tuple.pair newNoteInput model.cursorPos :: model.notes
+
+            else
+                model.notes
     in
-    { model | mode = newMode, noteInput = newNoteInput }
+    { model | mode = newMode, noteInput = newNoteInput, notes = newNotes }
