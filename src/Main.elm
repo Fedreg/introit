@@ -7,9 +7,8 @@ import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (..)
 import Json.Decode as Decode
-import Model exposing (Model)
+import Model exposing (Model, Note)
 import Notes as Notes
-import Random
 
 
 
@@ -83,23 +82,35 @@ update msg model =
                 dir =
                     getDirection key
 
-                note =
-                    Notes.getNote key
+                noteDuration =
+                    Notes.getNoteDuration key
 
                 pos =
                     Cursor.getNewCursorPos model.cursorPos dir
 
-                width =
-                    Maybe.withDefault 160.0 <| String.toFloat <| Notes.noteWidth note
+                noteWidth =
+                    Notes.noteWidthFloat noteDuration
 
                 newPos =
-                    ( Tuple.first pos + width, Tuple.second pos )
+                    ( Tuple.first pos + noteWidth, Tuple.second pos )
+
+                -- To do, get note name based on distance from base of staff
+                -- same with octave
+                -- don't build 'Note' unless the key press is actually for a note
+                noteName =
+                    "C"
+
+                noteOctave =
+                    3
+
+                note =
+                    Note (Tuple.first pos) (Tuple.second pos) noteName noteOctave noteDuration
 
                 notes =
-                    Notes.addNotes model.notes note pos
+                    Notes.addNotes model.notes note
 
                 cmd =
-                    case note of
+                    case note.duration of
                         "" ->
                             Cmd.none
 
@@ -108,7 +119,7 @@ update msg model =
                                 a =
                                     Debug.log "Snap!" note
                             in
-                            playNote note
+                            playNote note.name
             in
             ( { model | cursorPos = newPos, notes = notes }
             , cmd

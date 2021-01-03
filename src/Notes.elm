@@ -1,11 +1,13 @@
 module Notes exposing (..)
 
+import Model exposing (Note)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
 
 
 --staffCanvas : Svg Msg
+--staffCanvas : List
 
 
 staffCanvas notes =
@@ -33,6 +35,7 @@ staffLineGroup yPos =
     ]
 
 
+noteWidth : String -> String
 noteWidth noteName =
     case noteName of
         "W" ->
@@ -54,6 +57,12 @@ noteWidth noteName =
             "0"
 
 
+noteWidthFloat : String -> Float
+noteWidthFloat noteName =
+    Maybe.withDefault 160.0 <| String.toFloat <| noteWidth noteName
+
+
+noteColor : String -> String
 noteColor noteName =
     case noteName of
         "W" ->
@@ -77,23 +86,20 @@ noteColor noteName =
 
 noteSvg note =
     let
-        name =
-            Tuple.first note
+        duration =
+            note.duration
 
         nWidth =
-            noteWidth name
+            noteWidth duration
 
         fillColor =
-            noteColor name
-
-        pos =
-            Tuple.second note
+            noteColor duration
 
         xPos =
-            Tuple.first pos
+            note.x
 
         yPos =
-            negate (Tuple.second pos)
+            negate note.y
     in
     rect
         [ x (String.fromFloat xPos)
@@ -119,8 +125,8 @@ staffLine yPos =
         []
 
 
-getNote : String -> String
-getNote key =
+getNoteDuration : String -> String
+getNoteDuration key =
     case key of
         "w" ->
             "W"
@@ -141,23 +147,23 @@ getNote key =
             ""
 
 
-addNotes : List ( String, ( Float, Float ) ) -> String -> ( Float, Float ) -> List ( String, ( Float, Float ) )
-addNotes notes note pos =
-    case note of
+addNotes : List Note -> Note -> List Note
+addNotes notes note =
+    case note.duration of
         "W" ->
-            Tuple.pair note pos :: notes
+            note :: notes
 
         "H" ->
-            Tuple.pair note pos :: notes
+            note :: notes
 
         "Q" ->
-            Tuple.pair note pos :: notes
+            note :: notes
 
         "E" ->
-            Tuple.pair note pos :: notes
+            note :: notes
 
         "S" ->
-            Tuple.pair note pos :: notes
+            note :: notes
 
         _ ->
             notes
