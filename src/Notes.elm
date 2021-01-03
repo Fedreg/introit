@@ -25,11 +25,11 @@ staffCanvas notes =
 
 
 staffLineGroup yPos =
-    [ staffLine (Debug.toString (yPos + 0))
-    , staffLine (Debug.toString (yPos + 20))
-    , staffLine (Debug.toString (yPos + 40))
-    , staffLine (Debug.toString (yPos + 60))
-    , staffLine (Debug.toString (yPos + 80))
+    [ staffLine (String.fromFloat (yPos + 0))
+    , staffLine (String.fromFloat (yPos + 20))
+    , staffLine (String.fromFloat (yPos + 40))
+    , staffLine (String.fromFloat (yPos + 60))
+    , staffLine (String.fromFloat (yPos + 80))
     ]
 
 
@@ -96,8 +96,8 @@ noteSvg note =
             negate (Tuple.second pos)
     in
     rect
-        [ x (Debug.toString xPos)
-        , y (Debug.toString yPos)
+        [ x (String.fromFloat xPos)
+        , y (String.fromFloat yPos)
         , rx "10"
         , ry "10"
         , width nWidth
@@ -119,5 +119,49 @@ staffLine yPos =
         []
 
 
-defFlugel notes =
+getNote : String -> String
+getNote key =
+    case key of
+        "w" ->
+            "W"
+
+        "f" ->
+            "H"
+
+        "q" ->
+            "Q"
+
+        "e" ->
+            "E"
+
+        "s" ->
+            "S"
+
+        _ ->
+            ""
+
+
+addNotes : List ( String, ( Float, Float ) ) -> String -> ( Float, Float ) -> List ( String, ( Float, Float ) )
+addNotes notes note pos =
+    case note of
+        "W" ->
+            Tuple.pair note pos :: notes
+
+        "H" ->
+            Tuple.pair note pos :: notes
+
+        "Q" ->
+            Tuple.pair note pos :: notes
+
+        "E" ->
+            Tuple.pair note pos :: notes
+
+        "S" ->
+            Tuple.pair note pos :: notes
+
+        _ ->
+            notes
+
+
+draw notes =
     staffCanvas notes

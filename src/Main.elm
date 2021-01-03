@@ -2,6 +2,7 @@ port module Main exposing (..)
 
 import Browser
 import Browser.Events as BE
+import Cursor as Cursor
 import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (..)
@@ -47,14 +48,6 @@ type Direction
     | Other
 
 
-type NoteRhythm
-    = Whole
-    | Half
-    | Quarter
-    | Eigth
-    | Sixteenth
-
-
 keyDecoder : Decode.Decoder String
 keyDecoder =
     Decode.field "key" Decode.string
@@ -79,81 +72,6 @@ getDirection key =
             ""
 
 
-getNote : String -> String
-getNote key =
-    case key of
-        "w" ->
-            "W"
-
-        "r" ->
-            "H"
-
-        "q" ->
-            "Q"
-
-        "e" ->
-            "E"
-
-        "s" ->
-            "S"
-
-        _ ->
-            ""
-
-
-moveConst : Float
-moveConst =
-    10.0
-
-
-getNewCursorPos : ( Float, Float ) -> String -> ( Float, Float )
-getNewCursorPos currentPos dir =
-    let
-        x =
-            Tuple.first currentPos
-
-        y =
-            Tuple.second currentPos
-    in
-    case dir of
-        "Left" ->
-            ( Basics.max (x - moveConst) 0, y )
-
-        "Right" ->
-            ( x + moveConst, y )
-
-        "Up" ->
-            ( x, Basics.min (y + moveConst) 0 )
-
-        "Down" ->
-            ( x, y - moveConst )
-
-        _ ->
-            ( x, y )
-
-
-addNotes : List ( String, ( Float, Float ) ) -> String -> ( Float, Float ) -> List ( String, ( Float, Float ) )
-addNotes notes note pos =
-    case note of
-        "W" ->
-            Tuple.pair note pos :: notes
-
-        "H" ->
-            Tuple.pair note pos :: notes
-
-        "Q" ->
-            Tuple.pair note pos :: notes
-
-        "E" ->
-            Tuple.pair note pos :: notes
-
-        "S" ->
-            Tuple.pair note pos :: notes
-
-        _ ->
-            notes
-
-
 port playNote : String -> Cmd msg
 
 
@@ -166,13 +84,19 @@ update msg model =
                     getDirection key
 
                 note =
-                    getNote key
+                    Notes.getNote key
 
                 pos =
-                    getNewCursorPos model.cursorPos dir
+                    Cursor.getNewCursorPos model.cursorPos dir
+
+                width =
+                    Maybe.withDefault 160.0 <| String.toFloat <| Notes.noteWidth note
+
+                newPos =
+                    ( Tuple.first pos + width, Tuple.second pos )
 
                 notes =
-                    addNotes model.notes note pos
+                    Notes.addNotes model.notes note pos
 
                 cmd =
                     case note of
@@ -186,7 +110,7 @@ update msg model =
                             in
                             playNote note
             in
-            ( { model | cursorPos = pos, notes = notes }
+            ( { model | cursorPos = newPos, notes = notes }
             , cmd
             )
 
@@ -206,26 +130,6 @@ subscriptions model =
 -- VIEW
 
 
-cursor : ( Float, Float ) -> Html Msg
-cursor pos =
-    let
-        x =
-            Tuple.first pos
-
-        y =
-            negate (Tuple.second pos)
-    in
-    div
-        [ style "background-color" "red"
-        , style "height" "20px"
-        , style "width" "10px"
-        , style "position" "fixed"
-        , style "top" (Debug.toString y ++ "px")
-        , style "left" (Debug.toString x ++ "px")
-        ]
-        []
-
-
 view : Model -> Html Msg
 view model =
     div
@@ -233,8 +137,8 @@ view model =
         , style "height" "1000px"
         , style "color" "white"
         ]
-        [ cursor model.cursorPos
-        , Notes.defFlugel model.notes
+        [ Cursor.cursor model.cursorPos
+        , Notes.draw model.notes
 
         --, h1 [] [ Html.text (Debug.toString model.cursorPos) ]
         --, h1 [] [ text (Debug.toString model.notes) ]
@@ -246,5 +150,4 @@ view model =
 -- Layers for polyphony (switch layer with key press, not mouse)
 -- ledger lines
 -- measure lines (add with key press)
--- Web audio
 -- Edit / Delete notes
