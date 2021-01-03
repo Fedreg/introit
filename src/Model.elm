@@ -1,9 +1,19 @@
-module Model exposing (Model)
+module Model exposing (Model, Note)
 
 
 type alias Model =
     { cursorPos : ( Float, Float )
-    , notes : List ( List String, ( Float, Float ) )
+    , notes : List Note
     , mode : String
     , noteInput : List String
+    , staffBase : Float
+    }
+
+
+type alias Note =
+    { x : Float
+    , y : Float
+    , name : String
+    , octave : Int
+    , duration : String
     }

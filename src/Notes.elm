@@ -77,28 +77,18 @@ noteColor noteName =
 
 noteSvg note =
     let
-        -- This is pretty hacky..  should change notes from Tuples to Dicts
-        name =
-            Maybe.withDefault "" (List.head <| List.reverse <| Tuple.first <| note)
+        dur =
+            note.duration
 
         nWidth =
-            noteWidth name
+            noteWidth dur
 
         fillColor =
-            noteColor name
-
-        pos =
-            Tuple.second note
-
-        xPos =
-            Tuple.first pos
-
-        yPos =
-            negate (Tuple.second pos)
+            noteColor dur
     in
     rect
-        [ x (Debug.toString xPos)
-        , y (Debug.toString yPos)
+        [ x (Debug.toString note.x)
+        , y (Debug.toString (negate note.y))
         , rx "10"
         , ry "10"
         , width nWidth
@@ -116,9 +106,69 @@ staffLine yPos =
         , width "1500"
         , height "1"
         , fill "#777"
+        , id yPos
         ]
         []
 
 
-defFlugel notes =
+
+-- Determines how many px from the base of each staff a note is
+-- Each note step is 10; octave is 70
+
+
+distanceToBase base note octave =
+    let
+        octaveMod =
+            case octave of
+                "1" ->
+                    -140
+
+                "2" ->
+                    -70
+
+                "3" ->
+                    0
+
+                "4" ->
+                    70
+
+                "5" ->
+                    140
+
+                _ ->
+                    0
+
+        noteMod =
+            case note of
+                "A" ->
+                    -20
+
+                "B" ->
+                    -10
+
+                "C" ->
+                    0
+
+                "D" ->
+                    10
+
+                "E" ->
+                    20
+
+                "F" ->
+                    30
+
+                "G" ->
+                    40
+
+                _ ->
+                    0
+
+        a =
+            Debug.log "NoteDistance" [ octaveMod, noteMod ]
+    in
+    base - negate (octaveMod + noteMod)
+
+
+draw notes =
     staffCanvas notes

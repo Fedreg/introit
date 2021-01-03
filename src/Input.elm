@@ -1,6 +1,7 @@
 module Input exposing (parseInput)
 
-import Model exposing (Model)
+import Model exposing (Model, Note)
+import Notes exposing (distanceToBase, noteWidth)
 
 
 getNoteName : String -> String
@@ -103,22 +104,22 @@ appendOrReturn currentNoteInput attribute =
 
 buildNote : List String -> String -> List String
 buildNote currentNoteInput key =
-    case List.length currentNoteInput of
-        0 ->
+    case currentNoteInput of
+        [] ->
             let
                 name =
                     getNoteName key
             in
             appendOrReturn currentNoteInput name
 
-        1 ->
+        [ a ] ->
             let
                 octave =
                     getNoteOctave key
             in
             appendOrReturn currentNoteInput octave
 
-        2 ->
+        [ a, b ] ->
             let
                 duration =
                     getNoteDuration key
@@ -126,7 +127,11 @@ buildNote currentNoteInput key =
             appendOrReturn currentNoteInput duration
 
         _ ->
-            currentNoteInput
+            []
+
+
+
+--currentNoteInput
 
 
 parseInput : Model -> String -> Model
@@ -155,10 +160,39 @@ parseInput model key =
                     buildNote model.noteInput key
 
         newNotes =
-            if List.length newNoteInput == 3 then
-                Tuple.pair newNoteInput model.cursorPos :: model.notes
+            case newNoteInput of
+                [ name, octave, duration ] ->
+                    let
+                        x =
+                            Tuple.first model.cursorPos
 
-            else
-                model.notes
+                        y =
+                            distanceToBase model.staffBase name octave
+
+                        intOctave =
+                            Maybe.withDefault 4 (String.toInt octave)
+                    in
+                    Note x y name intOctave duration :: model.notes
+
+                _ ->
+                    model.notes
+
+        newCursorPos =
+            case newNoteInput of
+                [ name, octave, duration ] ->
+                    let
+                        width =
+                            Maybe.withDefault 160.0 (String.toFloat (noteWidth duration))
+
+                        x =
+                            Tuple.first model.cursorPos + width
+
+                        y =
+                            distanceToBase model.staffBase name octave
+                    in
+                    ( x, y )
+
+                _ ->
+                    model.cursorPos
     in
-    { model | mode = newMode, noteInput = newNoteInput, notes = newNotes }
+    { model | mode = newMode, noteInput = newNoteInput, notes = newNotes, cursorPos = newCursorPos }

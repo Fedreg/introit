@@ -29,10 +29,11 @@ main =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( Model
-        ( 60.0, -90.0 )
+        ( 60.0, -80.0 )
         []
         "Normal"
         []
+        -80.0
     , Cmd.none
     )
 
@@ -110,19 +111,16 @@ update msg model =
                         _ ->
                             Move.parseMovement model key
 
-                --cmd =
-                --case note of
-                --"" ->
-                --Cmd.none
-                --_ ->
-                --let
-                --a =
-                --Debug.log "Snap!" note
-                --in
-                --playNote note
+                cmd =
+                    case model.noteInput of
+                        [ name, octave ] ->
+                            playNote (name ++ octave)
+
+                        _ ->
+                            Cmd.none
             in
             ( newModel
-            , Cmd.none
+            , cmd
             )
 
 
@@ -183,7 +181,7 @@ view model =
         , style "color" "white"
         ]
         [ cursor model
-        , Notes.defFlugel model.notes
+        , Notes.draw model.notes
         , h1 [] [ Html.text (Debug.toString model.noteInput) ]
 
         --, h1 [] [ text (Debug.toString model.notes) ]
