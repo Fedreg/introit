@@ -19,9 +19,9 @@ var app = Elm.Main.init({ node: document.getElementById("elm") });
 
 const synth = new Tone.Synth().toDestination();
 
-app.ports.playNote.subscribe(function(message) {
-      synth.triggerAttackRelease("C4", "8n");
-      console.log("Pete2", message)
+app.ports.playNote.subscribe(function(note) {
+      synth.triggerAttackRelease(note.name + note.octave, "8n");
+      console.log("JS Port Note:", note, note.name + note.octave)
 });
 </script>
 </body>

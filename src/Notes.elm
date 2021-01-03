@@ -169,5 +169,34 @@ addNotes notes note =
             notes
 
 
+buildNote : String -> ( Float, Float ) -> Note
+buildNote noteDuration pos =
+    let
+        noteName =
+            "C"
+
+        noteOctave =
+            4
+    in
+    case noteDuration of
+        "W" ->
+            Note (Tuple.first pos) (Tuple.second pos) noteName noteOctave noteDuration
+
+        "H" ->
+            Note (Tuple.first pos) (Tuple.second pos) noteName noteOctave noteDuration
+
+        "Q" ->
+            Note (Tuple.first pos) (Tuple.second pos) noteName noteOctave noteDuration
+
+        "E" ->
+            Note (Tuple.first pos) (Tuple.second pos) noteName noteOctave noteDuration
+
+        "S" ->
+            Note (Tuple.first pos) (Tuple.second pos) noteName noteOctave noteDuration
+
+        _ ->
+            Note (Tuple.first pos) (Tuple.second pos) "" 0 ""
+
+
 draw notes =
     staffCanvas notes

@@ -71,7 +71,7 @@ getDirection key =
             ""
 
 
-port playNote : String -> Cmd msg
+port playNote : Note -> Cmd msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -94,17 +94,8 @@ update msg model =
                 newPos =
                     ( Tuple.first pos + noteWidth, Tuple.second pos )
 
-                -- To do, get note name based on distance from base of staff
-                -- same with octave
-                -- don't build 'Note' unless the key press is actually for a note
-                noteName =
-                    "C"
-
-                noteOctave =
-                    3
-
                 note =
-                    Note (Tuple.first pos) (Tuple.second pos) noteName noteOctave noteDuration
+                    Notes.buildNote noteDuration pos
 
                 notes =
                     Notes.addNotes model.notes note
@@ -119,7 +110,7 @@ update msg model =
                                 a =
                                     Debug.log "Snap!" note
                             in
-                            playNote note.name
+                            playNote note
             in
             ( { model | cursorPos = newPos, notes = notes }
             , cmd
