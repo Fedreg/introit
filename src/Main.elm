@@ -141,8 +141,8 @@ view model =
         ]
         [ Cursor.cursor model.cursorPos
         , Notes.draw model.notes
+        , h1 [] [ Html.text (Debug.toString model.cursorPos) ]
 
-        --, h1 [] [ Html.text (Debug.toString model.cursorPos) ]
         --, h1 [] [ text (Debug.toString model.notes) ]
         ]
 

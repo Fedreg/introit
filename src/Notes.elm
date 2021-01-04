@@ -5,11 +5,7 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
 
-
---staffCanvas : Svg Msg
---staffCanvas : List
-
-
+staffCanvas : List Note -> Svg msg
 staffCanvas notes =
     svg
         [ width "100%"
@@ -26,6 +22,7 @@ staffCanvas notes =
         )
 
 
+staffLineGroup : Float -> List (Svg msg)
 staffLineGroup yPos =
     [ staffLine (String.fromFloat (yPos + 0))
     , staffLine (String.fromFloat (yPos + 20))
@@ -84,6 +81,7 @@ noteColor noteName =
             ""
 
 
+noteSvg : Note -> Svg msg
 noteSvg note =
     let
         duration =
@@ -172,31 +170,97 @@ addNotes notes note =
 buildNote : String -> ( Float, Float ) -> Note
 buildNote noteDuration pos =
     let
-        noteName =
-            "C"
-
-        noteOctave =
-            4
+        { name, octave } =
+            noteNameAndOctaveByPos -150 pos
     in
     case noteDuration of
         "W" ->
-            Note (Tuple.first pos) (Tuple.second pos) noteName noteOctave noteDuration
+            Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration
 
         "H" ->
-            Note (Tuple.first pos) (Tuple.second pos) noteName noteOctave noteDuration
+            Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration
 
         "Q" ->
-            Note (Tuple.first pos) (Tuple.second pos) noteName noteOctave noteDuration
+            Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration
 
         "E" ->
-            Note (Tuple.first pos) (Tuple.second pos) noteName noteOctave noteDuration
+            Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration
 
         "S" ->
-            Note (Tuple.first pos) (Tuple.second pos) noteName noteOctave noteDuration
+            Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration
 
         _ ->
             Note (Tuple.first pos) (Tuple.second pos) "" 0 ""
 
 
+
+-- Each staff has a "base" value which is the x posiiton of the middle C note
+-- We use this to compute the name and octave of the entered note
+
+
+nameByPos : Int -> String
+nameByPos distanceToBase =
+    case distanceToBase of
+        0 ->
+            "C"
+
+        10 ->
+            "D"
+
+        20 ->
+            "E"
+
+        30 ->
+            "F"
+
+        40 ->
+            "G"
+
+        50 ->
+            "A"
+
+        60 ->
+            "B"
+
+        _ ->
+            "C"
+
+
+octaveByPos : Int -> Int
+octaveByPos distanceToBase =
+    if (distanceToBase >= 70) && (distanceToBase < 130) then
+        3
+
+    else if distanceToBase >= 130 then
+        4
+
+    else if (distanceToBase >= 0) && (distanceToBase < 70) then
+        2
+
+    else if (distanceToBase < 0) && (distanceToBase > -70) then
+        1
+
+    else
+        0
+
+
+noteNameAndOctaveByPos base pos =
+    let
+        xPos =
+            round (Tuple.second pos)
+
+        distanceToBase =
+            negate (base - xPos)
+
+        octave =
+            octaveByPos distanceToBase
+
+        name =
+            nameByPos (remainderBy 70 distanceToBase)
+    in
+    { octave = octave, name = name }
+
+
+draw : List Note -> Svg msg
 draw notes =
     staffCanvas notes
