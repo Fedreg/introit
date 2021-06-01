@@ -26,7 +26,7 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model ( 60.0, -90.0 ) []
+    ( Model ( 50.0, -90.0 ) [] ( 4, 4 ) 1
     , Cmd.none
     )
 
@@ -144,15 +144,15 @@ view : Model -> Html Msg
 view model =
     div
         [ style "background-color" "#E2E3DE"
-        , style "height" "1000px"
+        , style "height" "700px"
         , style "color" "white"
         ]
         [ Cursor.cursor model.cursorPos
         , Notes.draw model.notes
         , button [ onClick PlayAllNotes ] [ text "Play All!" ]
-        , h1 [] [ Html.text (Debug.toString model.cursorPos) ]
+        , h1 [ style "color" "#000" ] [ Html.text (Debug.toString model.notes) ]
 
-        --, h1 [] [ text (Debug.toString model.notes) ]
+        -- , h1 [] [ Html.text (Debug.toString model.cursorPos) ]
         ]
 
 

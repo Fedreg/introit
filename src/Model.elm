@@ -4,6 +4,8 @@ module Model exposing (Model, Note, Sequence)
 type alias Model =
     { cursorPos : ( Float, Float )
     , notes : List Note
+    , timeSignature : ( Int, Int )
+    , measureCount : Int
     }
 
 
