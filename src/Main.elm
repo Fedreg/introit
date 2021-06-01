@@ -7,7 +7,7 @@ import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (..)
 import Json.Decode as Decode
-import Model exposing (Model, Note)
+import Model exposing (Model, Note, Sequence)
 import Notes as Notes
 
 
@@ -37,6 +37,7 @@ init _ =
 
 type Msg
     = KeyInput String
+    | PlayAllNotes
 
 
 type Direction
@@ -74,9 +75,17 @@ getDirection key =
 port playNote : Note -> Cmd msg
 
 
+port playAll : Sequence -> Cmd msg
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        PlayAllNotes ->
+            ( model
+            , playAll (Sequence (List.reverse model.notes) [] 300)
+            )
+
         KeyInput key ->
             let
                 dir =
@@ -101,16 +110,15 @@ update msg model =
                     Notes.addNotes model.notes note
 
                 cmd =
-                    case note.duration of
-                        "" ->
-                            Cmd.none
+                    if note.duration > 0.1 then
+                        let
+                            newNote =
+                                { note | duration = 0.5 }
+                        in
+                        playNote newNote
 
-                        _ ->
-                            let
-                                a =
-                                    Debug.log "Snap!" note
-                            in
-                            playNote note
+                    else
+                        Cmd.none
             in
             ( { model | cursorPos = newPos, notes = notes }
             , cmd
@@ -141,6 +149,7 @@ view model =
         ]
         [ Cursor.cursor model.cursorPos
         , Notes.draw model.notes
+        , button [ onClick PlayAllNotes ] [ text "Play All!" ]
         , h1 [] [ Html.text (Debug.toString model.cursorPos) ]
 
         --, h1 [] [ text (Debug.toString model.notes) ]

@@ -1,4 +1,4 @@
-module Model exposing (Model, Note)
+module Model exposing (Model, Note, Sequence)
 
 
 type alias Model =
@@ -7,10 +7,30 @@ type alias Model =
     }
 
 
+type alias Sequence =
+    { queuedNotes : List Note
+    , playedNotes : List Note
+    , tempo : Int
+    }
+
+
 type alias Note =
     { x : Float
     , y : Float
     , name : String
     , octave : Int
-    , duration : String
+    , duration : Float
+    , hz : Float
     }
+
+
+
+-- type alias Note =
+--     { x : Float
+--     , y : Float
+--     , name : String
+--     , hz : Float
+--     , octave : Int
+--     , duration : Float
+--     , wave : String
+--     }

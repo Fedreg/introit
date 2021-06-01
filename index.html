@@ -10,19 +10,22 @@
 
 <pre id="elm"></pre>
 
-<script src="https://unpkg.com/tone@14.1.25/build/Tone.js"></script>
+<script src="audio.js"></script>
 <script src="elm.js"></script>
-<!--<script src="ports.js"></script>-->
 
 <script>
 var app = Elm.Main.init({ node: document.getElementById("elm") });
 
-const synth = new Tone.Synth().toDestination();
-
 app.ports.playNote.subscribe(function(note) {
-      synth.triggerAttackRelease(note.name + note.octave, "8n");
-      console.log("JS Port Note:", note, note.name + note.octave)
+    playNote(note);
+    console.log("JS Port Note:", note);
 });
+
+app.ports.playAll.subscribe(function(state) {
+    scheduler(state);
+    console.log("JS Port PlayAll:", state);
+});
+
 </script>
 </body>
 </html>

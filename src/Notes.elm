@@ -32,53 +32,51 @@ staffLineGroup yPos =
     ]
 
 
-noteWidth : String -> String
-noteWidth noteName =
-    case noteName of
-        "W" ->
-            "160"
+noteWidth : Float -> String
+noteWidth noteDuration =
+    if noteDuration > 3.9 && noteDuration < 8.0 then
+        "160"
 
-        "H" ->
-            "80"
+    else if noteDuration > 1.9 && noteDuration < 4.0 then
+        "80"
 
-        "Q" ->
-            "40"
+    else if noteDuration > 0.9 && noteDuration < 2.0 then
+        "40"
 
-        "E" ->
-            "20"
+    else if noteDuration > 0.4 && noteDuration < 1.0 then
+        "20"
 
-        "S" ->
-            "10"
+    else if noteDuration > 0.24 && noteDuration < 0.5 then
+        "10"
 
-        _ ->
-            "0"
-
-
-noteWidthFloat : String -> Float
-noteWidthFloat noteName =
-    Maybe.withDefault 160.0 <| String.toFloat <| noteWidth noteName
+    else
+        "0"
 
 
-noteColor : String -> String
-noteColor noteName =
-    case noteName of
-        "W" ->
-            "#6AA4B0"
+noteWidthFloat : Float -> Float
+noteWidthFloat noteDuration =
+    Maybe.withDefault 160.0 <| String.toFloat <| noteWidth noteDuration
 
-        "H" ->
-            "#62CCC0"
 
-        "Q" ->
-            "#2B4560"
+noteColor : Float -> String
+noteColor noteDuration =
+    if noteDuration > 3.9 && noteDuration < 8.0 then
+        "#6AA4B0"
 
-        "E" ->
-            "#E34234"
+    else if noteDuration > 1.9 && noteDuration < 4.0 then
+        "#62CCC0"
 
-        "S" ->
-            "#00E0EA"
+    else if noteDuration > 0.9 && noteDuration < 2.0 then
+        "#2B4560"
 
-        _ ->
-            ""
+    else if noteDuration > 0.4 && noteDuration < 1.0 then
+        "#E34234"
+
+    else if noteDuration > 0.24 && noteDuration < 0.5 then
+        "#00E0EA"
+
+    else
+        ""
 
 
 noteSvg : Note -> Svg msg
@@ -123,74 +121,112 @@ staffLine yPos =
         []
 
 
-getNoteDuration : String -> String
+getNoteDuration : String -> Float
 getNoteDuration key =
     case key of
         "w" ->
-            "W"
+            4.0
 
         "f" ->
-            "H"
+            2.0
 
         "q" ->
-            "Q"
+            1.0
 
         "e" ->
-            "E"
+            0.5
 
         "s" ->
-            "S"
+            0.25
 
         _ ->
-            ""
+            0.0
 
 
 addNotes : List Note -> Note -> List Note
 addNotes notes note =
-    case note.duration of
-        "W" ->
-            note :: notes
+    if note.duration > 0.1 then
+        note :: notes
 
-        "H" ->
-            note :: notes
+    else
+        notes
 
-        "Q" ->
-            note :: notes
 
-        "E" ->
-            note :: notes
+noteHz : String -> Float
+noteHz name =
+    case String.toLower name of
+        "c" ->
+            65.405
 
-        "S" ->
-            note :: notes
+        "c#" ->
+            69.5
+
+        "db" ->
+            69.5
+
+        "d" ->
+            73.415
+
+        "d#" ->
+            78.0
+
+        "eb" ->
+            78.0
+
+        "e" ->
+            82.405
+
+        "f" ->
+            87.305
+
+        "f#" ->
+            92.5
+
+        "gb" ->
+            92.5
+
+        "g" ->
+            98.0
+
+        "g#" ->
+            104.0
+
+        "ab" ->
+            104.0
+
+        "a" ->
+            110.0
+
+        "a#" ->
+            116.5
+
+        "bb" ->
+            116.5
+
+        "b" ->
+            123.47
+
+        "r" ->
+            0.0
 
         _ ->
-            notes
+            0.0
 
 
-buildNote : String -> ( Float, Float ) -> Note
+buildNote : Float -> ( Float, Float ) -> Note
 buildNote noteDuration pos =
     let
         { name, octave } =
             noteNameAndOctaveByPos -150 pos
+
+        hz =
+            noteHz name
     in
-    case noteDuration of
-        "W" ->
-            Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration
+    if noteDuration > 0.1 then
+        Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration hz
 
-        "H" ->
-            Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration
-
-        "Q" ->
-            Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration
-
-        "E" ->
-            Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration
-
-        "S" ->
-            Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration
-
-        _ ->
-            Note (Tuple.first pos) (Tuple.second pos) "" 0 ""
+    else
+        Note (Tuple.first pos) (Tuple.second pos) "" 0 0.0 0.0
 
 
 
