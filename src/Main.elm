@@ -130,16 +130,8 @@ undoNote model =
         lastNote =
             Maybe.withDefault defaultNote (List.head model.notes)
 
-        lastNoteDuration =
-            lastNote.duration
-
-        noteWidth =
-            Notes.noteWidthFloat lastNoteDuration
-
         newPos =
-            Tuple.pair
-                (Tuple.first model.cursorPos - noteWidth)
-                (Tuple.second model.cursorPos)
+            Tuple.pair lastNote.x lastNote.y
     in
     ( { model | notes = newNotes, cursorPos = newPos }
     , Cmd.none
