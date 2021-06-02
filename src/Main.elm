@@ -78,6 +78,74 @@ port playNote : Note -> Cmd msg
 port playAll : Sequence -> Cmd msg
 
 
+noteUpdate : String -> Model -> ( Model, Cmd msg )
+noteUpdate key model =
+    let
+        dir =
+            getDirection key
+
+        noteDuration =
+            Notes.getNoteDuration key
+
+        pos =
+            Cursor.getNewCursorPos model.cursorPos dir
+
+        noteWidth =
+            Notes.noteWidthFloat noteDuration
+
+        newPos =
+            ( Tuple.first pos + noteWidth, Tuple.second pos )
+
+        note =
+            Notes.buildNote noteDuration pos
+
+        notes =
+            Notes.addNotes model.notes note
+
+        cmd =
+            if note.duration > 0.1 then
+                let
+                    newNote =
+                        { note | duration = 0.5 }
+                in
+                playNote newNote
+
+            else
+                Cmd.none
+    in
+    ( { model | cursorPos = newPos, notes = notes }
+    , cmd
+    )
+
+
+undoNote : Model -> ( Model, Cmd msg )
+undoNote model =
+    let
+        newNotes =
+            List.drop 1 model.notes
+
+        defaultNote =
+            Note (Tuple.first model.cursorPos) (Tuple.second model.cursorPos) "C" 4 4 110.0
+
+        lastNote =
+            Maybe.withDefault defaultNote (List.head model.notes)
+
+        lastNoteDuration =
+            lastNote.duration
+
+        noteWidth =
+            Notes.noteWidthFloat lastNoteDuration
+
+        newPos =
+            Tuple.pair
+                (Tuple.first model.cursorPos - noteWidth)
+                (Tuple.second model.cursorPos)
+    in
+    ( { model | notes = newNotes, cursorPos = newPos }
+    , Cmd.none
+    )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -87,42 +155,12 @@ update msg model =
             )
 
         KeyInput key ->
-            let
-                dir =
-                    getDirection key
+            case key of
+                "u" ->
+                    undoNote model
 
-                noteDuration =
-                    Notes.getNoteDuration key
-
-                pos =
-                    Cursor.getNewCursorPos model.cursorPos dir
-
-                noteWidth =
-                    Notes.noteWidthFloat noteDuration
-
-                newPos =
-                    ( Tuple.first pos + noteWidth, Tuple.second pos )
-
-                note =
-                    Notes.buildNote noteDuration pos
-
-                notes =
-                    Notes.addNotes model.notes note
-
-                cmd =
-                    if note.duration > 0.1 then
-                        let
-                            newNote =
-                                { note | duration = 0.5 }
-                        in
-                        playNote newNote
-
-                    else
-                        Cmd.none
-            in
-            ( { model | cursorPos = newPos, notes = notes }
-            , cmd
-            )
+                _ ->
+                    noteUpdate key model
 
 
 

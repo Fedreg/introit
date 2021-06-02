@@ -70,6 +70,13 @@ staffCanvas notes =
             [ measure (Tuple.pair 50 60)
             , measure (Tuple.pair 210 60)
             , measure (Tuple.pair 370 60)
+            , measure (Tuple.pair 530 60)
+            , measure (Tuple.pair 690 60)
+            , measure (Tuple.pair 850 60)
+            , measure (Tuple.pair 1010 60)
+            , measure (Tuple.pair 1170 60)
+            , measure (Tuple.pair 1330 60)
+            , measure (Tuple.pair 1490 60)
 
             -- , staffLineGroup 220
             -- , staffLineGroup 380
