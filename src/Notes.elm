@@ -103,6 +103,9 @@ noteWidth noteDuration =
     else if noteDuration > 0.24 && noteDuration < 0.5 then
         "10"
 
+    else if noteDuration > 0.124 && noteDuration < 0.25 then
+        "5"
+
     else
         "0"
 
@@ -129,6 +132,9 @@ noteColor noteDuration =
     else if noteDuration > 0.24 && noteDuration < 0.5 then
         "#00E0EA"
 
+    else if noteDuration > 0.124 && noteDuration < 0.25 then
+        "#FFFFFF"
+
     else
         ""
 
@@ -145,6 +151,13 @@ noteSvg note =
         fillColor =
             noteColor duration
 
+        opaque =
+            if note.hz == 0.0 then
+                "0.2"
+
+            else
+                "1"
+
         xPos =
             note.x
 
@@ -159,6 +172,7 @@ noteSvg note =
         , width nWidth
         , height "20"
         , fill fillColor
+        , opacity opaque
         , Svg.Attributes.filter "drop-shadow(1px 1px 2px #aaa)"
         ]
         []
@@ -166,7 +180,7 @@ noteSvg note =
 
 getNoteDuration : String -> Float
 getNoteDuration key =
-    case key of
+    case String.toLower key of
         "w" ->
             4.0
 
@@ -181,6 +195,9 @@ getNoteDuration key =
 
         "s" ->
             0.25
+
+        "t" ->
+            0.125
 
         _ ->
             0.0
@@ -256,14 +273,18 @@ noteHz name =
             0.0
 
 
-buildNote : Float -> ( Float, Float ) -> Note
-buildNote noteDuration pos =
+buildNote : Float -> ( Float, Float ) -> Bool -> Note
+buildNote noteDuration pos isRest =
     let
         { name, octave } =
             noteNameAndOctaveByPos -150 pos
 
         hz =
-            noteHz name
+            if isRest == True then
+                0.0
+
+            else
+                noteHz name
     in
     if noteDuration > 0.1 then
         Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration hz

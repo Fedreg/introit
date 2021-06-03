@@ -92,8 +92,8 @@ moveUpdate key model =
     )
 
 
-noteUpdate : String -> Model -> ( Model, Cmd msg )
-noteUpdate key model =
+noteUpdate : String -> Model -> Bool -> ( Model, Cmd msg )
+noteUpdate key model isRest =
     let
         dir =
             getDirection key
@@ -111,7 +111,7 @@ noteUpdate key model =
             ( Tuple.first pos + noteWidth, Tuple.second pos )
 
         note =
-            Notes.buildNote noteDuration pos
+            Notes.buildNote noteDuration pos isRest
 
         notes =
             Notes.addNotes model.notes note
@@ -161,8 +161,11 @@ update msg model =
             )
 
         KeyInput key ->
-            if List.member key [ "w", "f", "q", "e", "s" ] then
-                noteUpdate key model
+            if List.member key [ "w", "f", "q", "e", "s", "t" ] then
+                noteUpdate key model False
+
+            else if List.member key [ "W", "F", "Q", "E", "S", "T" ] then
+                noteUpdate key model True
 
             else if List.member key [ "h", "j", "k", "l" ] then
                 moveUpdate key model
@@ -209,5 +212,5 @@ view model =
 -- TODO
 -- Layers for polyphony (switch layer with key press, not mouse)
 -- ledger lines
--- measure lines (add with key press)
 -- Edit / Delete notes
+-- Side Panel where you can choose colors, envelope editor
