@@ -25,7 +25,7 @@ function playNote(note) {
   osc.gain = 0;
   osc.frequency.value = fhz;
 
-  gain.setTargetAtTime(0.75, start, 0.05);
+  gain.setTargetAtTime(0.50, start, 0.05);
   gain.setTargetAtTime(0.00, start + ((duration / tempo) - (0.05 / tempo)), 0.05);
 
   osc.connect(vol);
