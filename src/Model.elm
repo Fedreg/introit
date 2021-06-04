@@ -5,7 +5,7 @@ type alias Model =
     { cursorPos : ( Float, Float )
     , notes : List Note
     , timeSignature : ( Int, Int )
-    , measureCount : Int
+    , beatCount : Float
     }
 
 
@@ -16,10 +16,13 @@ type alias Sequence =
     }
 
 
+
 -- TODO
 -- Keep track of measure and beat in that measure when I move cursor
 -- Then I can build a note id that is M13BQ, which would be: Measure 1, Beat 3, Note B, Duration Q
 -- Also add an id to each measure, can just be 1, 2 etc.
+
+
 type alias Note =
     { x : Float
     , y : Float

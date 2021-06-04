@@ -1,11 +1,4 @@
 
-// const ctx = try {
-//   new AudioContext
-//   catch (error) {
-//     new webkitAudioContext
-//   }
-// }
-
 const ctx = new AudioContext || new webkitAudioContext
 
 function playNote(note) {
@@ -66,7 +59,7 @@ function scheduler(state) {
       let lastDur  = lastPlayedNoteDuration(played);
       let newNnt   = nnt + (lastDur / tempoMod);
       played.push(firstQ);
-      newState = {"queuedNotes": restQ,
+      newState     = {"queuedNotes": restQ,
 	              "playedNotes": played,
 	              "tempo": t,
 	              "nextNoteTime": newNnt}

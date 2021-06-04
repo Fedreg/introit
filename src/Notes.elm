@@ -53,34 +53,40 @@ measure xy =
     ]
 
 
-
--- measureGroup : Int -> List (Svg msg)
--- measureGroup count =
---     List.map measure <| [ ( 50, 60 ), ( 210, 60 ), ( 370, 60 ) ]
+measures : Int -> Int -> List (Svg msg)
+measures yPos count =
+    let
+        ranges =
+            List.map
+                (\n -> 50 + 160 * n)
+                (List.range 0 count)
+    in
+    List.concatMap
+        (\a -> measure (Tuple.pair a yPos))
+        ranges
 
 
 staffCanvas : List Note -> Svg msg
 staffCanvas notes =
+    let
+        beatCount =
+            List.foldr (+) 0 (List.map (\n -> n.duration) notes)
+
+        measureCount =
+            if beatCount > 0 then
+                floor (beatCount / 4.0)
+
+            else
+                0
+    in
     svg
         [ width "100%"
         , height "90%"
+        , overflow "auto"
         , y "200"
         ]
         (List.concat
-            [ measure (Tuple.pair 50 60)
-            , measure (Tuple.pair 210 60)
-            , measure (Tuple.pair 370 60)
-            , measure (Tuple.pair 530 60)
-            , measure (Tuple.pair 690 60)
-            , measure (Tuple.pair 850 60)
-            , measure (Tuple.pair 1010 60)
-            , measure (Tuple.pair 1170 60)
-            , measure (Tuple.pair 1330 60)
-            , measure (Tuple.pair 1490 60)
-
-            -- , staffLineGroup 220
-            -- , staffLineGroup 380
-            -- , staffLineGroup 540
+            [ measures 60 measureCount
             , List.map noteSvg <| notes
             ]
         )

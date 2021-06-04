@@ -26,7 +26,7 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model ( 50.0, -90.0 ) [] ( 4, 4 ) 1
+    ( Model ( 50.0, -90.0 ) [] ( 4, 4 ) 0.0
     , Cmd.none
     )
 
@@ -127,7 +127,11 @@ noteUpdate key model isRest =
             else
                 Cmd.none
     in
-    ( { model | cursorPos = newPos, notes = notes }
+    ( { model
+        | cursorPos = newPos
+        , notes = notes
+        , beatCount = model.beatCount + noteDuration
+      }
     , cmd
     )
 
