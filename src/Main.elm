@@ -26,7 +26,7 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model ( 60.0, -90.0 ) []
+    ( Model ( 50.0, -90.0 ) [] ( 4, 4 ) 1
     , Cmd.none
     )
 
@@ -78,6 +78,80 @@ port playNote : Note -> Cmd msg
 port playAll : Sequence -> Cmd msg
 
 
+moveUpdate : String -> Model -> ( Model, Cmd msg )
+moveUpdate key model =
+    let
+        dir =
+            getDirection key
+
+        pos =
+            Cursor.getNewCursorPos model.cursorPos dir
+    in
+    ( { model | cursorPos = pos }
+    , Cmd.none
+    )
+
+
+noteUpdate : String -> Model -> Bool -> ( Model, Cmd msg )
+noteUpdate key model isRest =
+    let
+        dir =
+            getDirection key
+
+        noteDuration =
+            Notes.getNoteDuration key
+
+        pos =
+            Cursor.getNewCursorPos model.cursorPos dir
+
+        noteWidth =
+            Notes.noteWidthFloat noteDuration
+
+        newPos =
+            ( Tuple.first pos + noteWidth, Tuple.second pos )
+
+        note =
+            Notes.buildNote noteDuration pos isRest
+
+        notes =
+            Notes.addNotes model.notes note
+
+        cmd =
+            if note.duration > 0.1 then
+                let
+                    newNote =
+                        { note | duration = 0.5 }
+                in
+                playNote newNote
+
+            else
+                Cmd.none
+    in
+    ( { model | cursorPos = newPos, notes = notes }
+    , cmd
+    )
+
+
+undoNote : Model -> ( Model, Cmd msg )
+undoNote model =
+    let
+        newNotes =
+            List.drop 1 model.notes
+
+        defaultNote =
+            Note (Tuple.first model.cursorPos) (Tuple.second model.cursorPos) "C" 4 4 110.0
+
+        lastNote =
+            Maybe.withDefault defaultNote (List.head model.notes)
+
+        newPos =
+            Tuple.pair lastNote.x lastNote.y
+    in
+    ( { model | notes = newNotes, cursorPos = newPos }
+    , Cmd.none
+    )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -87,42 +161,20 @@ update msg model =
             )
 
         KeyInput key ->
-            let
-                dir =
-                    getDirection key
+            if List.member key [ "w", "f", "q", "e", "s", "t" ] then
+                noteUpdate key model False
 
-                noteDuration =
-                    Notes.getNoteDuration key
+            else if List.member key [ "W", "F", "Q", "E", "S", "T" ] then
+                noteUpdate key model True
 
-                pos =
-                    Cursor.getNewCursorPos model.cursorPos dir
+            else if List.member key [ "h", "j", "k", "l" ] then
+                moveUpdate key model
 
-                noteWidth =
-                    Notes.noteWidthFloat noteDuration
+            else if key == "u" then
+                undoNote model
 
-                newPos =
-                    ( Tuple.first pos + noteWidth, Tuple.second pos )
-
-                note =
-                    Notes.buildNote noteDuration pos
-
-                notes =
-                    Notes.addNotes model.notes note
-
-                cmd =
-                    if note.duration > 0.1 then
-                        let
-                            newNote =
-                                { note | duration = 0.5 }
-                        in
-                        playNote newNote
-
-                    else
-                        Cmd.none
-            in
-            ( { model | cursorPos = newPos, notes = notes }
-            , cmd
-            )
+            else
+                ( model, Cmd.none )
 
 
 
@@ -144,15 +196,15 @@ view : Model -> Html Msg
 view model =
     div
         [ style "background-color" "#E2E3DE"
-        , style "height" "1000px"
+        , style "height" "700px"
         , style "color" "white"
         ]
         [ Cursor.cursor model.cursorPos
         , Notes.draw model.notes
-        , button [ onClick PlayAllNotes ] [ text "Play All!" ]
-        , h1 [] [ Html.text (Debug.toString model.cursorPos) ]
+        , button [ onClick PlayAllNotes ] [ text "Play!" ]
 
-        --, h1 [] [ text (Debug.toString model.notes) ]
+        -- , h1 [ style "color" "#000" ] [ Html.text (Debug.toString model.notes) ]
+        -- , h1 [] [ Html.text (Debug.toString model.cursorPos) ]
         ]
 
 
@@ -160,5 +212,5 @@ view model =
 -- TODO
 -- Layers for polyphony (switch layer with key press, not mouse)
 -- ledger lines
--- measure lines (add with key press)
 -- Edit / Delete notes
+-- Side Panel where you can choose colors, envelope editor

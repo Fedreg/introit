@@ -5,6 +5,60 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
 
+measureWidth : Int
+measureWidth =
+    160
+
+
+staffLine : Int -> Int -> Svg msg
+staffLine xPos yPos =
+    rect
+        [ x (String.fromInt xPos)
+        , y (String.fromInt yPos)
+        , width (String.fromInt measureWidth)
+        , height "1"
+        , fill "#777"
+        ]
+        []
+
+
+barLine : Int -> Int -> Svg msg
+barLine xPos yPos =
+    rect
+        [ x (String.fromInt xPos)
+        , y (String.fromInt yPos)
+        , width "1"
+        , height "80"
+        , fill "#777"
+        ]
+        []
+
+
+measure : ( Int, Int ) -> List (Svg msg)
+measure xy =
+    let
+        xPos =
+            Tuple.first xy
+
+        yPos =
+            Tuple.second xy
+    in
+    [ barLine xPos yPos
+    , staffLine xPos (yPos + 0)
+    , staffLine xPos (yPos + 20)
+    , staffLine xPos (yPos + 40)
+    , staffLine xPos (yPos + 60)
+    , staffLine xPos (yPos + 80)
+    , barLine (xPos + measureWidth) yPos
+    ]
+
+
+
+-- measureGroup : Int -> List (Svg msg)
+-- measureGroup count =
+--     List.map measure <| [ ( 50, 60 ), ( 210, 60 ), ( 370, 60 ) ]
+
+
 staffCanvas : List Note -> Svg msg
 staffCanvas notes =
     svg
@@ -13,23 +67,23 @@ staffCanvas notes =
         , y "200"
         ]
         (List.concat
-            [ staffLineGroup 60
-            , staffLineGroup 220
-            , staffLineGroup 380
-            , staffLineGroup 540
+            [ measure (Tuple.pair 50 60)
+            , measure (Tuple.pair 210 60)
+            , measure (Tuple.pair 370 60)
+            , measure (Tuple.pair 530 60)
+            , measure (Tuple.pair 690 60)
+            , measure (Tuple.pair 850 60)
+            , measure (Tuple.pair 1010 60)
+            , measure (Tuple.pair 1170 60)
+            , measure (Tuple.pair 1330 60)
+            , measure (Tuple.pair 1490 60)
+
+            -- , staffLineGroup 220
+            -- , staffLineGroup 380
+            -- , staffLineGroup 540
             , List.map noteSvg <| notes
             ]
         )
-
-
-staffLineGroup : Float -> List (Svg msg)
-staffLineGroup yPos =
-    [ staffLine (String.fromFloat (yPos + 0))
-    , staffLine (String.fromFloat (yPos + 20))
-    , staffLine (String.fromFloat (yPos + 40))
-    , staffLine (String.fromFloat (yPos + 60))
-    , staffLine (String.fromFloat (yPos + 80))
-    ]
 
 
 noteWidth : Float -> String
@@ -48,6 +102,9 @@ noteWidth noteDuration =
 
     else if noteDuration > 0.24 && noteDuration < 0.5 then
         "10"
+
+    else if noteDuration > 0.124 && noteDuration < 0.25 then
+        "5"
 
     else
         "0"
@@ -75,6 +132,9 @@ noteColor noteDuration =
     else if noteDuration > 0.24 && noteDuration < 0.5 then
         "#00E0EA"
 
+    else if noteDuration > 0.124 && noteDuration < 0.25 then
+        "#FFFFFF"
+
     else
         ""
 
@@ -91,6 +151,13 @@ noteSvg note =
         fillColor =
             noteColor duration
 
+        opaque =
+            if note.hz == 0.0 then
+                "0.2"
+
+            else
+                "1"
+
         xPos =
             note.x
 
@@ -105,25 +172,15 @@ noteSvg note =
         , width nWidth
         , height "20"
         , fill fillColor
+        , opacity opaque
         , Svg.Attributes.filter "drop-shadow(1px 1px 2px #aaa)"
-        ]
-        []
-
-
-staffLine yPos =
-    rect
-        [ x "50"
-        , y yPos
-        , width "1500"
-        , height "1"
-        , fill "#777"
         ]
         []
 
 
 getNoteDuration : String -> Float
 getNoteDuration key =
-    case key of
+    case String.toLower key of
         "w" ->
             4.0
 
@@ -138,6 +195,9 @@ getNoteDuration key =
 
         "s" ->
             0.25
+
+        "t" ->
+            0.125
 
         _ ->
             0.0
@@ -213,14 +273,18 @@ noteHz name =
             0.0
 
 
-buildNote : Float -> ( Float, Float ) -> Note
-buildNote noteDuration pos =
+buildNote : Float -> ( Float, Float ) -> Bool -> Note
+buildNote noteDuration pos isRest =
     let
         { name, octave } =
             noteNameAndOctaveByPos -150 pos
 
         hz =
-            noteHz name
+            if isRest == True then
+                0.0
+
+            else
+                noteHz name
     in
     if noteDuration > 0.1 then
         Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration hz
