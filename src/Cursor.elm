@@ -4,6 +4,11 @@ import Html exposing (..)
 import Html.Attributes exposing (style)
 
 
+moveConst : Float
+moveConst =
+    10.0
+
+
 cursor : ( Float, Float ) -> Html msg
 cursor pos =
     let
@@ -22,11 +27,6 @@ cursor pos =
         , style "left" (String.fromFloat x ++ "px")
         ]
         []
-
-
-moveConst : Float
-moveConst =
-    10.0
 
 
 getNewCursorPos : ( Float, Float ) -> String -> ( Float, Float )

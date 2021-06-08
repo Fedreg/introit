@@ -18,12 +18,12 @@ var app = Elm.Main.init({ node: document.getElementById("elm") });
 
 app.ports.playNote.subscribe(function(note) {
     playNote(note);
-    console.log("JS Port Note:", note);
+    <!-- console.log("JS Port Note:", note); -->
 });
 
 app.ports.playAll.subscribe(function(state) {
     scheduler(state);
-    console.log("JS Port PlayAll:", state);
+    <!-- console.log("JS Port PlayAll:", state); -->
 });
 
 </script>

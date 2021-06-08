@@ -53,8 +53,8 @@ keyDecoder =
     Decode.field "key" Decode.string
 
 
-getDirection : String -> String
-getDirection key =
+keyPressToDirection : String -> String
+keyPressToDirection key =
     case key of
         "j" ->
             "Down"
@@ -78,11 +78,11 @@ port playNote : Note -> Cmd msg
 port playAll : Sequence -> Cmd msg
 
 
-moveUpdate : String -> Model -> ( Model, Cmd msg )
-moveUpdate key model =
+moveCursorUpdate : String -> Model -> ( Model, Cmd msg )
+moveCursorUpdate key model =
     let
         dir =
-            getDirection key
+            keyPressToDirection key
 
         pos =
             Cursor.getNewCursorPos model.cursorPos dir
@@ -92,26 +92,26 @@ moveUpdate key model =
     )
 
 
-noteUpdate : String -> Model -> Bool -> ( Model, Cmd msg )
-noteUpdate key model isRest =
+addNoteUpdate : String -> Model -> Bool -> ( Model, Cmd msg )
+addNoteUpdate key model isRest =
     let
         dir =
-            getDirection key
-
-        noteDuration =
-            Notes.getNoteDuration key
+            keyPressToDirection key
 
         pos =
             Cursor.getNewCursorPos model.cursorPos dir
 
+        noteDurationFloat =
+            Notes.getNoteDuration key
+
         noteWidth =
-            Notes.noteWidthFloat noteDuration
+            Notes.noteWidthFloat key
 
         newPos =
             ( Tuple.first pos + noteWidth, Tuple.second pos )
 
         note =
-            Notes.buildNote noteDuration pos isRest
+            Notes.buildNote key pos isRest
 
         notes =
             Notes.addNotes model.notes note
@@ -130,20 +130,20 @@ noteUpdate key model isRest =
     ( { model
         | cursorPos = newPos
         , notes = notes
-        , beatCount = model.beatCount + noteDuration
+        , beatCount = model.beatCount + noteDurationFloat
       }
     , cmd
     )
 
 
-undoNote : Model -> ( Model, Cmd msg )
-undoNote model =
+undoNoteUpdate : Model -> ( Model, Cmd msg )
+undoNoteUpdate model =
     let
         newNotes =
             List.drop 1 model.notes
 
         defaultNote =
-            Note (Tuple.first model.cursorPos) (Tuple.second model.cursorPos) "C" 4 4 110.0
+            Note (Tuple.first model.cursorPos) (Tuple.second model.cursorPos) "C" 4 4 "w" 110.0
 
         lastNote =
             Maybe.withDefault defaultNote (List.head model.notes)
@@ -166,16 +166,21 @@ update msg model =
 
         KeyInput key ->
             if List.member key [ "w", "f", "q", "e", "s", "t" ] then
-                noteUpdate key model False
+                addNoteUpdate key model False
 
             else if List.member key [ "W", "F", "Q", "E", "S", "T" ] then
-                noteUpdate key model True
+                addNoteUpdate key model True
 
             else if List.member key [ "h", "j", "k", "l" ] then
-                moveUpdate key model
+                moveCursorUpdate key model
 
             else if key == "u" then
-                undoNote model
+                undoNoteUpdate model
+
+            else if key == " " then
+                ( model
+                , playAll (Sequence (List.reverse model.notes) [] 300)
+                )
 
             else
                 ( model, Cmd.none )
@@ -204,7 +209,9 @@ view model =
         , style "color" "white"
         ]
         [ Cursor.cursor model.cursorPos
-        , Notes.draw model.notes
+        , div
+            []
+            (Notes.draw model.notes)
         , button [ onClick PlayAllNotes ] [ text "Play!" ]
 
         -- , h1 [ style "color" "#000" ] [ Html.text (Debug.toString model.notes) ]
@@ -214,6 +221,8 @@ view model =
 
 
 -- TODO
+-- Still need to come up with a better way to model note on measure..
+-- maybe everything is based of (0,0) (upper left) and I can compute note from measure based on distace to 0,0???  Worth exploring.  This will let me wrap measure and add layers.
 -- Layers for polyphony (switch layer with key press, not mouse)
 -- ledger lines
 -- Edit / Delete notes

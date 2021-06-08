@@ -22,6 +22,11 @@ staffLine xPos yPos =
         []
 
 
+ledgerLine : Svg msg
+ledgerLine =
+    staffLine 10
+
+
 barLine : Int -> Int -> Svg msg
 barLine xPos yPos =
     rect
@@ -66,90 +71,81 @@ measures yPos count =
         ranges
 
 
-staffCanvas : List Note -> Svg msg
-staffCanvas notes =
-    let
-        beatCount =
-            List.foldr (+) 0 (List.map (\n -> n.duration) notes)
-
-        measureCount =
-            if beatCount > 0 then
-                floor (beatCount / 4.0)
-
-            else
-                0
-    in
+staffCanvas : Int -> List Note -> Int -> String -> Svg msg
+staffCanvas measureCount notes yPos sid =
     svg
         [ width "100%"
-        , height "90%"
-        , overflow "auto"
-        , y "200"
+        , height "300px"
+        , y (String.fromInt yPos)
+        , id sid
         ]
         (List.concat
-            [ measures 60 measureCount
+            [ measures 70 measureCount
             , List.map noteSvg <| notes
             ]
         )
 
 
-noteWidth : Float -> String
+noteWidth : String -> String
 noteWidth noteDuration =
-    if noteDuration > 3.9 && noteDuration < 8.0 then
-        "160"
+    case String.toLower noteDuration of
+        "w" ->
+            "160"
 
-    else if noteDuration > 1.9 && noteDuration < 4.0 then
-        "80"
+        "f" ->
+            "80"
 
-    else if noteDuration > 0.9 && noteDuration < 2.0 then
-        "40"
+        "q" ->
+            "40"
 
-    else if noteDuration > 0.4 && noteDuration < 1.0 then
-        "20"
+        "e" ->
+            "20"
 
-    else if noteDuration > 0.24 && noteDuration < 0.5 then
-        "10"
+        "s" ->
+            "10"
 
-    else if noteDuration > 0.124 && noteDuration < 0.25 then
-        "5"
+        "t" ->
+            "5"
 
-    else
-        "0"
+        _ ->
+            "0"
 
 
-noteWidthFloat : Float -> Float
+noteWidthFloat : String -> Float
 noteWidthFloat noteDuration =
     Maybe.withDefault 160.0 <| String.toFloat <| noteWidth noteDuration
 
 
-noteColor : Float -> String
+noteColor : String -> String
 noteColor noteDuration =
-    if noteDuration > 3.9 && noteDuration < 8.0 then
-        "#6AA4B0"
+    case String.toLower noteDuration of
+        "w" ->
+            "#6AA4B0"
 
-    else if noteDuration > 1.9 && noteDuration < 4.0 then
-        "#62CCC0"
+        "f" ->
+            "#62CCC0"
 
-    else if noteDuration > 0.9 && noteDuration < 2.0 then
-        "#2B4560"
+        "q" ->
+            "#2B4560"
 
-    else if noteDuration > 0.4 && noteDuration < 1.0 then
-        "#E34234"
+        "e" ->
+            "#E34234"
 
-    else if noteDuration > 0.24 && noteDuration < 0.5 then
-        "#00E0EA"
+        "s" ->
+            "#00E0EA"
 
-    else if noteDuration > 0.124 && noteDuration < 0.25 then
-        "#FFFFFF"
+        "t" ->
+            "#FFFFFF"
 
-    else
-        ""
+        _ ->
+            ""
 
 
 noteSvg : Note -> Svg msg
 noteSvg note =
     let
         duration =
-            note.duration
+            note.durationType
 
         nWidth =
             noteWidth duration
@@ -279,11 +275,14 @@ noteHz name =
             0.0
 
 
-buildNote : Float -> ( Float, Float ) -> Bool -> Note
+buildNote : String -> ( Float, Float ) -> Bool -> Note
 buildNote noteDuration pos isRest =
     let
         { name, octave } =
-            noteNameAndOctaveByPos -150 pos
+            noteNameAndOctaveByPos -230 pos
+
+        noteDurationFloat =
+            getNoteDuration noteDuration
 
         hz =
             if isRest == True then
@@ -292,11 +291,11 @@ buildNote noteDuration pos isRest =
             else
                 noteHz name
     in
-    if noteDuration > 0.1 then
-        Note (Tuple.first pos) (Tuple.second pos) name octave noteDuration hz
+    if noteDurationFloat > 0.1 then
+        Note (Tuple.first pos) (Tuple.second pos) name octave noteDurationFloat noteDuration hz
 
     else
-        Note (Tuple.first pos) (Tuple.second pos) "" 0 0.0 0.0
+        Note (Tuple.first pos) (Tuple.second pos) "" 0 0.0 "t" 0.0
 
 
 
@@ -334,29 +333,30 @@ nameByPos distanceToBase =
 
 octaveByPos : Int -> Int
 octaveByPos distanceToBase =
-    if (distanceToBase >= 70) && (distanceToBase < 130) then
-        3
-
-    else if distanceToBase >= 130 then
+    if distanceToBase >= 210 then
         4
 
-    else if (distanceToBase >= 0) && (distanceToBase < 70) then
+    else if (distanceToBase >= 140) && (distanceToBase < 210) then
+        3
+
+    else if (distanceToBase >= 70) && (distanceToBase < 140) then
         2
 
-    else if (distanceToBase < 0) && (distanceToBase > -70) then
+    else if (distanceToBase >= -10) && (distanceToBase < 70) then
         1
 
     else
         0
 
 
+noteNameAndOctaveByPos : Int -> ( Float, Float ) -> { name : String, octave : Int }
 noteNameAndOctaveByPos base pos =
     let
-        xPos =
+        yPos =
             round (Tuple.second pos)
 
         distanceToBase =
-            negate (base - xPos)
+            negate (base - yPos)
 
         octave =
             octaveByPos distanceToBase
@@ -367,6 +367,20 @@ noteNameAndOctaveByPos base pos =
     { octave = octave, name = name }
 
 
-draw : List Note -> Svg msg
+draw : List Note -> List (Svg msg)
 draw notes =
-    staffCanvas notes
+    let
+        beatCount =
+            List.foldr (+) 0 (List.map (\n -> n.duration) notes)
+
+        measureCount =
+            if beatCount > 0 then
+                floor (beatCount / 4.0)
+
+            else
+                0
+
+        yPos =
+            0
+    in
+    [ staffCanvas measureCount notes yPos "v1" ]
