@@ -6,6 +6,7 @@ type alias Model =
     , notes : List Note
     , timeSignature : ( Int, Int )
     , beatCount : Float
+    , basePosition : Int
     }
 
 

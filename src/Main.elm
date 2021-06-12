@@ -26,7 +26,7 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model ( 50.0, -90.0 ) [] ( 4, 4 ) 0.0
+    ( Model ( 50.0, -90.0 ) [] ( 4, 4 ) 0.0 0
     , Cmd.none
     )
 
@@ -86,8 +86,16 @@ moveCursorUpdate key model =
 
         pos =
             Cursor.getNewCursorPos model.cursorPos dir
+
+        base =
+            pos
+                |> Tuple.second
+                |> negate
+                |> (\a -> a / 280)
+                |> floor
+                |> (\a -> a * 280)
     in
-    ( { model | cursorPos = pos }
+    ( { model | cursorPos = pos, basePosition = base }
     , Cmd.none
     )
 
@@ -111,7 +119,7 @@ addNoteUpdate key model isRest =
             ( Tuple.first pos + noteWidth, Tuple.second pos )
 
         note =
-            Notes.buildNote key pos isRest
+            Notes.buildNote key pos isRest model.basePosition
 
         notes =
             Notes.addNotes model.notes note
@@ -180,6 +188,11 @@ update msg model =
             else if key == " " then
                 ( model
                 , playAll (Sequence (List.reverse model.notes) [] 300)
+                )
+
+            else if key == "0" then
+                ( { model | cursorPos = Tuple.pair 50 (Tuple.second model.cursorPos) }
+                , Cmd.none
                 )
 
             else

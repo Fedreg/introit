@@ -24,7 +24,7 @@ staffLine xPos yPos =
 
 ledgerLine : Svg msg
 ledgerLine =
-    staffLine 10
+    staffLine 10 10
 
 
 barLine : Int -> Int -> Svg msg
@@ -75,12 +75,12 @@ staffCanvas : Int -> List Note -> Int -> String -> Svg msg
 staffCanvas measureCount notes yPos sid =
     svg
         [ width "100%"
-        , height "300px"
+        , height "350px"
         , y (String.fromInt yPos)
         , id sid
         ]
         (List.concat
-            [ measures 70 measureCount
+            [ measures 120 measureCount
             , List.map noteSvg <| notes
             ]
         )
@@ -275,11 +275,11 @@ noteHz name =
             0.0
 
 
-buildNote : String -> ( Float, Float ) -> Bool -> Note
-buildNote noteDuration pos isRest =
+buildNote : String -> ( Float, Float ) -> Bool -> Int -> Note
+buildNote noteDuration pos isRest base =
     let
         { name, octave } =
-            noteNameAndOctaveByPos -230 pos
+            noteNameAndOctaveByPos base pos
 
         noteDurationFloat =
             getNoteDuration noteDuration
@@ -310,22 +310,22 @@ nameByPos distanceToBase =
             "C"
 
         10 ->
-            "D"
+            "B"
 
         20 ->
-            "E"
-
-        30 ->
-            "F"
-
-        40 ->
-            "G"
-
-        50 ->
             "A"
 
+        30 ->
+            "G"
+
+        40 ->
+            "F"
+
+        50 ->
+            "E"
+
         60 ->
-            "B"
+            "D"
 
         _ ->
             "C"
@@ -333,16 +333,19 @@ nameByPos distanceToBase =
 
 octaveByPos : Int -> Int
 octaveByPos distanceToBase =
-    if distanceToBase >= 210 then
+    if distanceToBase <= 0 then
+        5
+
+    else if (distanceToBase > 0) && (distanceToBase <= 70) then
         4
 
-    else if (distanceToBase >= 140) && (distanceToBase < 210) then
+    else if (distanceToBase > 70) && (distanceToBase <= 140) then
         3
 
-    else if (distanceToBase >= 70) && (distanceToBase < 140) then
+    else if (distanceToBase > 140) && (distanceToBase <= 210) then
         2
 
-    else if (distanceToBase >= -10) && (distanceToBase < 70) then
+    else if (distanceToBase > 210) && (distanceToBase <= 280) then
         1
 
     else
@@ -356,13 +359,25 @@ noteNameAndOctaveByPos base pos =
             round (Tuple.second pos)
 
         distanceToBase =
-            negate (base - yPos)
+            negate (yPos + base)
 
         octave =
             octaveByPos distanceToBase
 
         name =
             nameByPos (remainderBy 70 distanceToBase)
+
+        _ =
+            Debug.log "model.base" base
+
+        _ =
+            Debug.log "NAME" name
+
+        _ =
+            Debug.log "DTB" distanceToBase
+
+        _ =
+            Debug.log "8" octave
     in
     { octave = octave, name = name }
 
